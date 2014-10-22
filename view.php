@@ -78,29 +78,36 @@ else {
 }
 
 
-// Import the document, load DOM
-$staticdoc = new DOMDocument();
-$staticdoc->loadHTMLFile($path);
+// Import the document
+$html = file_get_contents($path);
 
 // Extract page's first h1 (if present)
-if (!empty($staticdoc->getElementsByTagName('h1')->item(0)->nodeValue)) {
-    $firsth1 = $staticdoc->getElementsByTagName('h1')->item(0)->nodeValue;
+$h1Start = strpos($html, '<h1>');
+$h1End = strpos($html, '</h1>');
+$h1 = substr($html, $h1Start, $h1End - $h1Start);
+if (!empty($h1)) {
+    $firsth1 = $h1;
 }
 else {
     $firsth1 = $page;
 }
 
 // Extract page title (if present)
-if (!empty($staticdoc->getElementsByTagName('title')->item(0)->nodeValue)) {
-    $title = $staticdoc->getElementsByTagName('title')->item(0)->nodeValue;
+$titleStart = strpos($html, '<h1>');
+$titleEnd = strpos($html, '</h1>');
+$title = substr($html, $titleStart, $titleEnd - $titleStart);
+if (!empty($h1)) {
+    $title = $h1;
 }
 else {
     $title = $page;
 }
 
 // Extract style tag in head (if present) and insert into HTML head
-if (!empty($staticdoc->getElementsByTagName('style')->item(0)->nodeValue)) {
-    $style = $staticdoc->getElementsByTagName('style')->item(0)->nodeValue;
+$styleStart = strpos($html, '<style>');
+$styleEnd = strpos($html, '</style>');
+$style = substr($html, $styleStart, $styleEnd - $styleStart);
+if (!empty($style)) {
     $CFG->additionalhtmlhead = $CFG->additionalhtmlhead.'<style>'.$style.'</style>';
 }
 
@@ -153,10 +160,8 @@ else {
     $PAGE->navbar->add($title);
 }
 
+// Print Header
 echo $OUTPUT->header();
-
-// Get html code
-$html = $staticdoc->saveHTML();
 
 // Remove everything except body tag content from html
 $startcut = strpos($html, '<body>') + 6;
@@ -166,4 +171,5 @@ $html = substr($html, $startcut, $stopcut);
 // Print html code
 echo $html;
 
+// Print Footer
 echo $OUTPUT->footer();
